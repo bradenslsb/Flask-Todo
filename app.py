@@ -30,9 +30,26 @@ todo_schema = TodoSchema()
 todos_schema = TodoSchema(many=True)
 
 
-@app.route("/", methods=["GET"])
-def home():
-    return "<h1>Hello</h1>"
+
+@app.route("/todos", methods=["GET"])
+def get_todos():
+    all_todos = Todo.query.all()
+    results = todos_schema.dump(all_todos)
+
+    return jsonify(results)
+
+@app.route("/todo", methods=["POST"])
+def add_todo():
+    title = request.json["title"]
+    done = request.json["done"]
+
+    new_todo = Todo(title, done)
+
+    db.session.add(new_todo)
+    db.session.commit()
+
+    todo = Todo.query.get(new_todo.id)
+    return todo_schema.jsonify(todo)
 
 if __name__ == "__main__":
     app.run(debug=True)
